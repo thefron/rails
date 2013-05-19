@@ -91,14 +91,15 @@ module Squash::Ruby::ControllerMethods
   #   {#notify_squash} gives to `Squash::Ruby.notify`.
 
   def squash_rails_data
-    flash_hash = flash.to_hash.stringify_keys
+    # flash_hash = flash.to_hash.stringify_keys
+    filtered_headers = Hash[request.headers.select { |header| header =~ /^HTTP/ }]
     filtered_params = request.respond_to?(:filtered_parameters) ? request.filtered_parameters : filter_parameters(params)
 
     {
         :environment    => Rails.env.to_s,
         :root           => Rails.root.to_s,
 
-        :headers        => filter_for_squash(_filter_for_squash(request.headers.to_hash, :headers), :headers),
+        :headers        => filter_for_squash(_filter_for_squash(filtered_headers, :headers), :headers),
         :request_method => request.request_method.to_s.upcase,
         :schema         => request.protocol.sub('://', ''),
         :host           => request.host,
@@ -110,7 +111,7 @@ module Squash::Ruby::ControllerMethods
         :action         => action_name,
         :params         => filter_for_squash(filtered_params, :params),
         :session        => filter_for_squash(session.to_hash, :session),
-        :flash          => filter_for_squash(flash_hash, :flash),
+        # :flash          => filter_for_squash(flash_hash, :flash),
         :cookies        => filter_for_squash(cookies.instance_variable_get(:@cookies) || {}, :cookies)
     }
   end
@@ -139,6 +140,8 @@ module Squash::Ruby::ControllerMethods
       yield
     rescue Object => err
       handler_err = err.respond_to?(:original_exception) ? err.original_exception : err
+      require 'pry'
+      binding.pry
       notify_squash(err) unless handler_for_rescue(handler_err)
       raise
     end
