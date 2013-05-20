@@ -140,8 +140,6 @@ module Squash::Ruby::ControllerMethods
       yield
     rescue Object => err
       handler_err = err.respond_to?(:original_exception) ? err.original_exception : err
-      require 'pry'
-      binding.pry
       notify_squash(err) unless handler_for_rescue(handler_err)
       raise
     end
