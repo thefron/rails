@@ -24,7 +24,7 @@ module Squash::Ruby::ControllerMethods
   # Request headers that typically contain sensitive information. As an
   # alternative to appending to this constant, you can also override the
   # {#filter_for_squash} method.
-  FILTERED_HEADERS = %w(HTTP_AUTHORIZATION RAW_POST_DATA)
+  FILTERED_HEADERS = %w(RAW_POST_DATA)
 
   # @private
   def self.included(base)
@@ -92,7 +92,7 @@ module Squash::Ruby::ControllerMethods
 
   def squash_rails_data
     # flash_hash = flash.to_hash.stringify_keys
-    filtered_headers = Hash[request.headers.select { |header| header =~ /^HTTP/ }]
+    filtered_headers = Hash[request.env.select { |header| header =~ /^HTTP/ }]
     filtered_params = request.respond_to?(:filtered_parameters) ? request.filtered_parameters : filter_parameters(params)
 
     {
